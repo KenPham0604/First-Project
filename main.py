@@ -23,6 +23,7 @@ Respond ONLY in this exact JSON format, no other text:
 """
 def retry_generation(prompt, max_try = 3):
     model = ["gemini-3.5-flash","gemini-3.5-flash-lite"]
+    last_error = None
     for model_name in model:
         for attempt in range(max_try):
             try:
@@ -32,13 +33,14 @@ def retry_generation(prompt, max_try = 3):
             )
                 return response
             except Exception as e:
-                print(f'Atempt {attempt}')
+                last_error = e
+                print(f'Attempt {attempt}')
                 print(f'{model_name} failing by {e}')
                 if attempt < max_try - 1:
                     wait_time = 2**attempt
                     print(f'Retrying in {wait_time}...')
                     time.sleep(wait_time)
-                raise RuntimeError(f"Every model failed by {e}")
+    raise RuntimeError(f"Every model failed by {last_error}")
 
 response =  retry_generation(prompt)
 
